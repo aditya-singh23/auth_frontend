@@ -14,7 +14,7 @@ export interface User {
 }
 
 // API Response types
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = Record<string, string | number | boolean> | string | number> {
   success: boolean;
   message: string;
   data?: T;
@@ -71,9 +71,31 @@ export interface GoogleOAuthResponse {
   select_by: string;
 }
 
+// Error types for better error handling
+export interface ApiErrorResponse {
+  message: string;
+  errors?: string[];
+  status?: number;
+  statusText?: string;
+}
+
+export interface NetworkError extends Error {
+  response?: {
+    data?: ApiErrorResponse;
+    status?: number;
+    statusText?: string;
+  };
+}
+
+export interface ValidationErrorDetails {
+  field: string;
+  message: string;
+  value?: string | number | boolean;
+}
+
 // Component Props types
 export interface FormProps {
-  onSubmit: (data: any) => void;
+  onSubmit: (data: Record<string, string | number | boolean>) => void;
   isLoading?: boolean;
   error?: string;
 }

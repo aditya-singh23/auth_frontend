@@ -94,53 +94,10 @@ export const store = configureStore({
 
   // Redux DevTools configuration
   devTools: process.env.NODE_ENV !== 'production' && {
-    name: 'Basic Auth App', // Name in DevTools
-    trace: true, // Enable action stack traces
-    traceLimit: 25, // Limit stack trace entries
-
-    // Action sanitizer (hide sensitive data in DevTools)
-    actionSanitizer: (action: any) => {
-      // Hide password data in DevTools
-      if (action.type.includes('auth/') && action.payload) {
-        const sanitized = { ...action };
-        if (sanitized.payload.password) {
-          sanitized.payload = {
-            ...sanitized.payload,
-            password: '***HIDDEN***',
-          };
-        }
-        if (sanitized.payload.confirmPassword) {
-          sanitized.payload = {
-            ...sanitized.payload,
-            confirmPassword: '***HIDDEN***',
-          };
-        }
-        return sanitized;
-      }
-      return action;
-    },
-
-    // State sanitizer (hide sensitive data in DevTools)
-    stateSanitizer: (state: any) => {
-      // Hide token in DevTools for security
-      if (state.auth && state.auth.token) {
-        return {
-          ...state,
-          auth: {
-            ...state.auth,
-            token: '***HIDDEN***',
-          },
-        };
-      }
-      return state;
-    },
+    name: 'Basic Auth App',
+    trace: true,
+    traceLimit: 25,
   },
-
-  // Preloaded state (optional)
-  preloadedState: undefined,
-
-  // Enhancers (optional)
-  enhancers: defaultEnhancers => defaultEnhancers,
 });
 
 // ====================================================================
@@ -171,8 +128,8 @@ export const getCurrentState = (): RootState => store.getState();
 
 // Function to check if store is rehydrated (useful for app initialization)
 export const isStoreRehydrated = (): boolean => {
-  const state = store.getState() as any;
-  return state._persist && state._persist.rehydrated;
+  const state = store.getState() as RootState & { _persist?: { rehydrated?: boolean } };
+  return Boolean(state._persist && state._persist.rehydrated);
 };
 
 // ====================================================================
@@ -181,7 +138,7 @@ export const isStoreRehydrated = (): boolean => {
 
 if (process.env.NODE_ENV === 'development') {
   // Make store available globally for debugging
-  (window as any).__REDUX_STORE__ = store;
+  (window as unknown as { __REDUX_STORE__: typeof store }).__REDUX_STORE__ = store;
 
   // Log store state changes (disabled to reduce console noise)
   // store.subscribe(() => {

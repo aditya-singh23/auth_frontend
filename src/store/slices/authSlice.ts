@@ -1,16 +1,42 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { authAPI } from '../../services/api';
-import { secureStorage } from '../../utils/secureStorage';
 import {
   User,
-  AuthState,
+  AuthResponse,
   LoginRequest,
   SignupRequest,
   ForgotPasswordRequest,
   ResetPasswordRequest,
-  AuthResponse,
   ApiResponse,
+  NetworkError,
+  ApiErrorResponse,
 } from '../../types';
+import { authAPI } from '../../services/api';
+import secureStorage from '../../utils/secureStorage';
+
+/**
+ * Helper function to extract error message from network errors
+ */
+function extractErrorMessage(
+  error: Error | NetworkError | ApiErrorResponse,
+  defaultMessage: string
+): string {
+  // Handle API error responses
+  if ('message' in error && typeof error.message === 'string') {
+    return error.message;
+  }
+
+  // Handle network errors with response data
+  if ('response' in error && error.response?.data?.message) {
+    return error.response.data.message;
+  }
+
+  // Handle errors with errors array
+  if ('errors' in error && Array.isArray(error.errors)) {
+    return error.errors.join(', ');
+  }
+
+  return defaultMessage;
+}
 
 /**
  * Auth Slice - Redux Toolkit slice for authentication state management
@@ -46,21 +72,10 @@ export const signupUser = createAsyncThunk<
     }
 
     return response.data!;
-  } catch (error: any) {
+  } catch (error) {
     console.error('Signup error details:', error);
 
-    // Extract error message from different possible error structures
-    let errorMessage = 'Signup failed';
-
-    if (error.message) {
-      errorMessage = error.message;
-    } else if (error.errors && Array.isArray(error.errors)) {
-      errorMessage = error.errors.join(', ');
-    } else if (typeof error === 'string') {
-      errorMessage = error;
-    }
-
-    return rejectWithValue(errorMessage);
+    return rejectWithValue(extractErrorMessage(error as NetworkError, 'Signup failed'));
   }
 });
 
@@ -79,8 +94,8 @@ export const loginUser = createAsyncThunk<AuthResponse, LoginRequest, { rejectVa
       }
 
       return response.data!;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Login failed');
+    } catch (error) {
+      return rejectWithValue(extractErrorMessage(error as NetworkError, 'Login failed'));
     }
   }
 );
@@ -95,8 +110,10 @@ export const forgotPassword = createAsyncThunk<
     // Call the forgot password API
     const response = await authAPI.forgotPassword(emailData);
     return response;
-  } catch (error: any) {
-    return rejectWithValue(error.message || 'Failed to send reset email');
+  } catch (error) {
+    return rejectWithValue(
+      extractErrorMessage(error as NetworkError, 'Failed to send reset email')
+    );
   }
 });
 
@@ -110,8 +127,8 @@ export const resetPassword = createAsyncThunk<
     // Call the reset password API
     const response = await authAPI.resetPassword(resetData);
     return response;
-  } catch (error: any) {
-    return rejectWithValue(error.message || 'Failed to reset password');
+  } catch (error) {
+    return rejectWithValue(extractErrorMessage(error as NetworkError, 'Failed to reset password'));
   }
 });
 
@@ -123,8 +140,8 @@ export const getUsers = createAsyncThunk<User[], void, { rejectValue: string }>(
       // Call the get users API
       const response = await authAPI.getUsers();
       return response.data!;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to fetch users');
+    } catch (error) {
+      return rejectWithValue(extractErrorMessage(error as NetworkError, 'Failed to fetch users'));
     }
   }
 );
@@ -139,8 +156,10 @@ export const googleOAuth = createAsyncThunk<null, void, { rejectValue: string }>
 
       // This thunk doesn't return data since it redirects
       return null;
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to initiate Google OAuth');
+    } catch (error) {
+      return rejectWithValue(
+        extractErrorMessage(error as NetworkError, 'Failed to initiate Google OAuth')
+      );
     }
   }
 );
@@ -159,10 +178,27 @@ export const googleOAuthSuccess = createAsyncThunk<
     }
 
     return { token, user };
-  } catch (error: any) {
-    return rejectWithValue(error.message || 'Failed to process Google OAuth success');
+  } catch (error) {
+    return rejectWithValue(
+      extractErrorMessage(error as NetworkError, 'Failed to process Google OAuth success')
+    );
   }
 });
+
+// ====================================================================
+// AUTH STATE INTERFACE
+// ====================================================================
+
+export interface AuthState {
+  user: User | null;
+  token: string | null;
+  isLoading: boolean;
+  error: string | null;
+  isAuthenticated: boolean;
+  users: User[];
+  forgotPasswordMessage: string | null;
+  resetPasswordMessage: string | null;
+}
 
 // ====================================================================
 // INITIAL STATE - Default state when app starts

@@ -6,6 +6,7 @@
  */
 
 import CryptoJS from 'crypto-js';
+import { User } from '../types';
 
 /**
  * Generate a secret key based on browser fingerprint and app-specific salt
@@ -33,7 +34,9 @@ const ENCRYPTION_KEY = generateSecretKey();
 /**
  * Encrypt data for localStorage storage
  */
-export const encryptData = (data: any): string => {
+export const encryptData = (
+  data: string | Record<string, string | number | boolean> | User
+): string => {
   try {
     // Convert data to JSON string
     const jsonString = JSON.stringify(data);
@@ -53,7 +56,9 @@ export const encryptData = (data: any): string => {
 /**
  * Decrypt data from localStorage
  */
-export const decryptData = (encryptedData: string): any => {
+export const decryptData = (
+  encryptedData: string
+): string | Record<string, string | number | boolean> | User | null => {
   try {
     // Check if data is encrypted
     if (!encryptedData.startsWith('encrypted:')) {
@@ -84,7 +89,10 @@ export const secureLocalStorage = {
   /**
    * Set encrypted item in localStorage
    */
-  setItem: (key: string, value: any): void => {
+  setItem: (
+    key: string,
+    value: string | Record<string, string | number | boolean> | User
+  ): void => {
     try {
       const encryptedValue = encryptData(value);
       localStorage.setItem(key, encryptedValue);
@@ -97,7 +105,7 @@ export const secureLocalStorage = {
   /**
    * Get and decrypt item from localStorage
    */
-  getItem: (key: string): any => {
+  getItem: (key: string): string | Record<string, string | number | boolean> | User | null => {
     try {
       const encryptedValue = localStorage.getItem(key);
       if (!encryptedValue) return null;
@@ -133,10 +141,15 @@ export const secureLocalStorage = {
  */
 export const testEncryption = (): boolean => {
   try {
-    const testData = {
-      user: { name: 'Test User', email: 'test@example.com' },
-      token: 'test-jwt-token',
-      timestamp: Date.now(),
+    const testData: User = {
+      id: 1,
+      name: 'Test User',
+      email: 'test@example.com',
+      provider: 'local',
+      profilePicture: undefined,
+      emailVerified: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
     // Test encryption
@@ -162,8 +175,18 @@ export const testEncryption = (): boolean => {
  * Development helper: Make encryption utilities available in console
  */
 if (process.env.NODE_ENV === 'development') {
-  (window as any).testEncryption = testEncryption;
-  (window as any).secureLocalStorage = secureLocalStorage;
+  (
+    window as unknown as {
+      testEncryption: typeof testEncryption;
+      secureLocalStorage: typeof secureLocalStorage;
+    }
+  ).testEncryption = testEncryption;
+  (
+    window as unknown as {
+      testEncryption: typeof testEncryption;
+      secureLocalStorage: typeof secureLocalStorage;
+    }
+  ).secureLocalStorage = secureLocalStorage;
 
   console.log('🔐 Encryption utilities available:');
   console.log('  - window.testEncryption()');

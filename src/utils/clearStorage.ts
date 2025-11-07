@@ -67,10 +67,38 @@ export const listStorageKeys = (): void => {
  * Development helper: Add to window object for easy access in console
  */
 if (process.env.NODE_ENV === 'development') {
-  (window as any).clearReduxPersist = clearReduxPersist;
-  (window as any).clearAuthStorage = clearAuthStorage;
-  (window as any).clearAllLocalStorage = clearAllLocalStorage;
-  (window as any).listStorageKeys = listStorageKeys;
+  (
+    window as unknown as {
+      clearReduxPersist: typeof clearReduxPersist;
+      clearAuthStorage: typeof clearAuthStorage;
+      clearAllLocalStorage: typeof clearAllLocalStorage;
+      listStorageKeys: typeof listStorageKeys;
+    }
+  ).clearReduxPersist = clearReduxPersist;
+  (
+    window as unknown as {
+      clearReduxPersist: typeof clearReduxPersist;
+      clearAuthStorage: typeof clearAuthStorage;
+      clearAllLocalStorage: typeof clearAllLocalStorage;
+      listStorageKeys: typeof listStorageKeys;
+    }
+  ).clearAuthStorage = clearAuthStorage;
+  (
+    window as unknown as {
+      clearReduxPersist: typeof clearReduxPersist;
+      clearAuthStorage: typeof clearAuthStorage;
+      clearAllLocalStorage: typeof clearAllLocalStorage;
+      listStorageKeys: typeof listStorageKeys;
+    }
+  ).clearAllLocalStorage = clearAllLocalStorage;
+  (
+    window as unknown as {
+      clearReduxPersist: typeof clearReduxPersist;
+      clearAuthStorage: typeof clearAuthStorage;
+      clearAllLocalStorage: typeof clearAllLocalStorage;
+      listStorageKeys: typeof listStorageKeys;
+    }
+  ).listStorageKeys = listStorageKeys;
 
   console.log('🛠️ Storage utilities available:');
   console.log('  - window.clearReduxPersist()');

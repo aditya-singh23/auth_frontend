@@ -5,6 +5,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 
 // Import validation and API
 import { resetPasswordSchema, ResetPasswordFormData } from '../utils/validationSchemas';
+import { NetworkError } from '../types';
 import { authAPI } from '../services/api';
 
 /**
@@ -76,9 +77,9 @@ const ResetPassword: React.FC = () => {
       } else {
         setApiError(response.message || 'Failed to reset password');
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Reset password error:', error);
-      setApiError(error.message || 'Failed to reset password. Please try again.');
+      setApiError((error as NetworkError).message || 'Failed to reset password. Please try again.');
     } finally {
       setIsLoading(false);
     }

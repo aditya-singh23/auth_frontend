@@ -10,9 +10,12 @@ import { User } from '../types';
 
 // TypeScript interface for secure-ls (removed unused interface)
 
+// Specific data types for secure storage
+type StorageData = string | User | Record<string, string | number | boolean>;
+
 interface SecureLSInstance {
-  set(key: string, data: any): void;
-  get(key: string): any;
+  set(key: string, data: StorageData): void;
+  get(key: string): StorageData | null;
   remove(key: string): void;
   removeAll(): void;
   clear(): void;
@@ -71,7 +74,7 @@ export class SecureStorageService {
   public getToken(): string | null {
     try {
       const token = this.storage.get(STORAGE_KEYS.TOKEN);
-      return token || null;
+      return typeof token === 'string' ? token : null;
     } catch (error) {
       console.error('❌ Failed to retrieve token securely:', error);
       // Fallback to regular localStorage
@@ -105,12 +108,31 @@ export class SecureStorageService {
   public getUser(): User | null {
     try {
       const user = this.storage.get(STORAGE_KEYS.USER);
-      return user || null;
+      // Type guard to ensure user has required User properties
+      if (user && typeof user === 'object' && user !== null && !Array.isArray(user)) {
+        const userObj = user as Record<string, string | number | boolean>;
+        if (
+          typeof userObj.id === 'number' &&
+          typeof userObj.email === 'string' &&
+          typeof userObj.name === 'string'
+        ) {
+          return userObj as unknown as User;
+        }
+      }
+      return null;
     } catch (error) {
       console.error('❌ Failed to retrieve user data securely:', error);
       // Fallback to regular localStorage
       const userData = localStorage.getItem('user');
-      return userData ? JSON.parse(userData) : null;
+      if (userData) {
+        try {
+          const parsed = JSON.parse(userData);
+          return parsed && typeof parsed === 'object' ? (parsed as User) : null;
+        } catch {
+          return null;
+        }
+      }
+      return null;
     }
   }
 
@@ -126,7 +148,7 @@ export class SecureStorageService {
   }
 
   // Session management
-  public setSessionData(data: Record<string, any>): void {
+  public setSessionData(data: Record<string, string | number | boolean>): void {
     try {
       this.storage.set(STORAGE_KEYS.SESSION, data);
       console.log('🔐 Session data stored securely');
@@ -135,10 +157,13 @@ export class SecureStorageService {
     }
   }
 
-  public getSessionData(): Record<string, any> | null {
+  public getSessionData(): Record<string, string | number | boolean> | null {
     try {
       const data = this.storage.get(STORAGE_KEYS.SESSION);
-      return data || null;
+      if (data && typeof data === 'object' && !Array.isArray(data)) {
+        return data as Record<string, string | number | boolean>;
+      }
+      return null;
     } catch (error) {
       console.error('❌ Failed to retrieve session data securely:', error);
       return null;
@@ -155,7 +180,7 @@ export class SecureStorageService {
   }
 
   // User preferences
-  public setPreferences(preferences: Record<string, any>): void {
+  public setPreferences(preferences: Record<string, string | number | boolean>): void {
     try {
       this.storage.set(STORAGE_KEYS.PREFERENCES, preferences);
       console.log('🔐 Preferences stored securely');
@@ -164,10 +189,13 @@ export class SecureStorageService {
     }
   }
 
-  public getPreferences(): Record<string, any> | null {
+  public getPreferences(): Record<string, string | number | boolean> | null {
     try {
       const preferences = this.storage.get(STORAGE_KEYS.PREFERENCES);
-      return preferences || null;
+      if (preferences && typeof preferences === 'object' && !Array.isArray(preferences)) {
+        return preferences as Record<string, string | number | boolean>;
+      }
+      return null;
     } catch (error) {
       console.error('❌ Failed to retrieve preferences securely:', error);
       return null;
@@ -229,12 +257,13 @@ export const secureStorage = {
   removeUser: () => secureStorageService.removeUser(),
 
   // Session methods
-  setSessionData: (data: Record<string, any>) => secureStorageService.setSessionData(data),
+  setSessionData: (data: Record<string, string | number | boolean>) =>
+    secureStorageService.setSessionData(data),
   getSessionData: () => secureStorageService.getSessionData(),
   removeSessionData: () => secureStorageService.removeSessionData(),
 
   // Preferences methods
-  setPreferences: (preferences: Record<string, any>) =>
+  setPreferences: (preferences: Record<string, string | number | boolean>) =>
     secureStorageService.setPreferences(preferences),
   getPreferences: () => secureStorageService.getPreferences(),
 

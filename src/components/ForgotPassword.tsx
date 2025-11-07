@@ -5,6 +5,7 @@ import { useNavigate, Link } from 'react-router-dom';
 
 // Import validation and API
 import { forgotPasswordSchema, ForgotPasswordFormData } from '../utils/validationSchemas';
+import { NetworkError } from '../types';
 import { authAPI } from '../services/api';
 
 /**
@@ -64,9 +65,11 @@ const ForgotPassword: React.FC = () => {
       } else {
         setApiError(response.message || 'Failed to send reset email');
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Forgot password error:', error);
-      setApiError(error.message || 'Failed to send reset email. Please try again.');
+      setApiError(
+        (error as NetworkError).message || 'Failed to send reset email. Please try again.'
+      );
     } finally {
       setIsLoading(false);
     }

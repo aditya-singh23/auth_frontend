@@ -1,12 +1,13 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
 import {
-  ApiResponse,
+  User,
+  AuthResponse,
   LoginRequest,
   SignupRequest,
   ForgotPasswordRequest,
   ResetPasswordRequest,
-  AuthResponse,
-  User,
+  ApiResponse,
+  NetworkError,
   ApiError,
 } from '../types';
 
@@ -72,8 +73,10 @@ export const authAPI = {
     try {
       const response = await api.post<ApiResponse<AuthResponse>>('/auth/signup', userData);
       return response.data;
-    } catch (error: any) {
-      const apiError: ApiError = error.response?.data || { message: 'Network error occurred' };
+    } catch (error) {
+      const apiError: ApiError = (error as NetworkError).response?.data || {
+        message: 'Network error occurred',
+      };
       throw apiError;
     }
   },
@@ -85,8 +88,10 @@ export const authAPI = {
     try {
       const response = await api.post<ApiResponse<AuthResponse>>('/auth/login', credentials);
       return response.data;
-    } catch (error: any) {
-      const apiError: ApiError = error.response?.data || { message: 'Network error occurred' };
+    } catch (error) {
+      const apiError: ApiError = (error as NetworkError).response?.data || {
+        message: 'Network error occurred',
+      };
       throw apiError;
     }
   },
@@ -98,8 +103,10 @@ export const authAPI = {
     try {
       const response = await api.get<ApiResponse<User[]>>('/auth/users');
       return response.data;
-    } catch (error: any) {
-      const apiError: ApiError = error.response?.data || { message: 'Network error occurred' };
+    } catch (error) {
+      const apiError: ApiError = (error as NetworkError).response?.data || {
+        message: 'Network error occurred',
+      };
       throw apiError;
     }
   },
@@ -111,8 +118,10 @@ export const authAPI = {
     try {
       const response = await api.post<ApiResponse>('/auth/forgot-password', emailData);
       return response.data;
-    } catch (error: any) {
-      const apiError: ApiError = error.response?.data || { message: 'Network error occurred' };
+    } catch (error) {
+      const apiError: ApiError = (error as NetworkError).response?.data || {
+        message: 'Network error occurred',
+      };
       throw apiError;
     }
   },
@@ -124,8 +133,10 @@ export const authAPI = {
     try {
       const response = await api.post<ApiResponse<AuthResponse>>('/auth/reset-password', resetData);
       return response.data;
-    } catch (error: any) {
-      const apiError: ApiError = error.response?.data || { message: 'Network error occurred' };
+    } catch (error) {
+      const apiError: ApiError = (error as NetworkError).response?.data || {
+        message: 'Network error occurred',
+      };
       throw apiError;
     }
   },
@@ -137,8 +148,10 @@ export const authAPI = {
     try {
       const response = await api.get<ApiResponse<User>>('/auth/profile');
       return response.data;
-    } catch (error: any) {
-      const apiError: ApiError = error.response?.data || { message: 'Network error occurred' };
+    } catch (error) {
+      const apiError: ApiError = (error as NetworkError).response?.data || {
+        message: 'Network error occurred',
+      };
       throw apiError;
     }
   },
@@ -150,8 +163,10 @@ export const authAPI = {
     try {
       const response = await api.get<ApiResponse>('/auth/oauth/status');
       return response.data;
-    } catch (error: any) {
-      const apiError: ApiError = error.response?.data || { message: 'Network error occurred' };
+    } catch (error) {
+      const apiError: ApiError = (error as NetworkError).response?.data || {
+        message: 'Network error occurred',
+      };
       throw apiError;
     }
   },
@@ -165,8 +180,10 @@ export const authAPI = {
         googleToken,
       });
       return response.data;
-    } catch (error: any) {
-      const apiError: ApiError = error.response?.data || { message: 'Network error occurred' };
+    } catch (error) {
+      const apiError: ApiError = (error as NetworkError).response?.data || {
+        message: 'Network error occurred',
+      };
       throw apiError;
     }
   },

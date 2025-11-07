@@ -21,6 +21,7 @@ import Dashboard from './components/DashboardRedux';
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
 import OAuthCallback from './components/OAuthCallback';
+import Chatbot from './components/Chatbot';
 
 /**
  * Inner App component that uses Redux hooks
@@ -55,6 +56,9 @@ function AppContent(): JSX.Element {
           {/* OAuth callback route */}
           <Route path='/oauth/callback' element={<OAuthCallback />} />
         </Routes>
+
+        {/* AI Chatbot - Available on all pages */}
+        <Chatbot />
       </div>
     </Router>
   );
